@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bundles | Peak Supplements</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { font-family: system-ui, sans-serif; }
+    </style>
+</head>
+<body class="bg-zinc-50 text-zinc-900">
+
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-3xl font-bold tracking-tighter text-emerald-600">PEAK</a>
+            <div class="hidden md:flex gap-8 text-sm font-medium">
+                <a href="index.html" class="hover:text-emerald-600">Home</a>
+                <a href="protein.html" class="hover:text-emerald-600">Protein</a>
+                <a href="pre-workout.html" class="hover:text-emerald-600">Pre-Workout</a>
+                <a href="other.html" class="hover:text-emerald-600">Other</a>
+                <a href="bundles.html" class="hover:text-emerald-600">Bundles</a>
+            </div>
+            <div class="flex items-center gap-6">
+                <button onclick="openCart()" class="relative hover:text-emerald-600">
+                    <i class="fa-solid fa-cart-shopping text-2xl"></i>
+                    <span id="cart-count" class="absolute -top-2 -right-2 bg-emerald-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                </button>
+                <button onclick="toggleMobileMenu()" class="md:hidden text-2xl">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="flex flex-col px-6 py-4 gap-4 text-sm font-medium">
+                <a href="index.html" class="py-2">Home</a>
+                <a href="protein.html" class="py-2">Protein</a>
+                <a href="pre-workout.html" class="py-2">Pre-Workout</a>
+                <a href="other.html" class="py-2">Other</a>
+                <a href="bundles.html" class="py-2">Bundles</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-16">
+        <h1 class="text-5xl md:text-6xl font-bold text-center mb-16">Bundles & Stacks</h1>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" id="product-grid"></div>
+    </main>
+
+    <footer class="bg-zinc-900 text-white py-12 mt-20">
+        <div class="max-w-7xl mx-auto px-6 text-center text-sm">
+            <p>© 2026 Peak Supplements • Perth, WA • Free shipping on orders over $100 AUD</p>
+        </div>
+    </footer>
+
+    <div id="cart-modal" class="hidden fixed inset-0 bg-black/70 flex items-end md:items-center justify-center z-[100]">
+        <div class="bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl max-h-[90vh] overflow-auto">
+            <div class="p-6 border-b flex justify-between items-center sticky top-0 bg-white">
+                <h2 class="text-2xl font-semibold">Your Cart</h2>
+                <button onclick="closeCart()" class="text-3xl leading-none">×</button>
+            </div>
+            <div id="cart-items" class="p-6 space-y-6"></div>
+            <div class="p-6 border-t sticky bottom-0 bg-white">
+                <div class="flex justify-between text-xl font-semibold mb-6">
+                    <span>Total</span>
+                    <span id="cart-total">$0.00</span>
+                </div>
+                <button onclick="proceedToCheckout()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-2xl text-lg font-semibold">Proceed to Checkout</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const products = [
+            {id:1, name:"Whey Protein Isolate", category:"protein", price:49.99, img:"https://picsum.photos/id/1015/600/400", desc:"25g protein, ultra-fast absorption"},
+            {id:2, name:"Plant-Based Protein", category:"protein", price:54.99, img:"https://picsum.photos/id/201/600/400", desc:"Vegan chocolate dream"},
+            {id:3, name:"Whey Concentrate", category:"protein", price:39.99, img:"https://picsum.photos/id/133/600/400", desc:"Everyday 22g protein"},
+            {id:4, name:"Explosive Pre-Workout", category:"preworkout", price:44.99, img:"https://picsum.photos/id/180/600/400", desc:"Berry Blast • 300mg caffeine"},
+            {id:5, name:"Nitric Oxide Pre", category:"preworkout", price:49.99, img:"https://picsum.photos/id/251/600/400", desc:"Massive pumps, low stim"},
+            {id:6, name:"Caffeine-Free Pre", category:"preworkout", price:39.99, img:"https://picsum.photos/id/312/600/400", desc:"Perfect for night training"},
+            {id:7, name:"Creatine Monohydrate", category:"other", price:29.99, img:"https://picsum.photos/id/292/600/400", desc:"Micronized 5g serves"},
+            {id:8, name:"BCAA Powder", category:"other", price:34.99, img:"https://picsum.photos/id/433/600/400", desc:"2:1:1 recovery formula"},
+            {id:9, name:"Omega-3 Fish Oil", category:"other", price:24.99, img:"https://picsum.photos/id/669/600/400", desc:"High EPA/DHA"},
+            {id:10, name:"Daily Multivitamin", category:"other", price:19.99, img:"https://picsum.photos/id/870/600/400", desc:"Gummies • 30 day supply"},
+            {id:11, name:"Beginner Stack", category:"bundles", price:79.99, img:"https://picsum.photos/id/1016/600/400", desc:"Whey + Creatine (save $20)"},
+            {id:12, name:"Performance Bundle", category:"bundles", price:99.99, img:"https://picsum.photos/id/133/600/400", desc:"Pre + Whey + BCAA (save $30)"},
+            {id:13, name:"Ultimate Gains Stack", category:"bundles", price:129.99, img:"https://picsum.photos/id/201/600/400", desc:"Full stack (save $50)"}
+        ];
+
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        function saveCart() { localStorage.setItem('cart', JSON.stringify(cart)); updateCartCount(); }
+        function updateCartCount() {
+            const count = cart.reduce((sum, item) => sum + item.qty, 0);
+            document.getElementById('cart-count').textContent = count;
+        }
+
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            const existing = cart.find(item => item.id === id);
+            if (existing) existing.qty++;
+            else cart.push({id: id, qty: 1});
+            saveCart();
+            alert(`${product.name} added to cart!`);
+        }
+
+        function changeQty(id, change) {
+            const item = cart.find(i => i.id === id);
+            if (!item) return;
+            item.qty += change;
+            if (item.qty < 1) removeFromCart(id);
+            else { saveCart(); renderCart(); }
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(i => i.id !== id);
+            saveCart();
+            renderCart();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            if (!container) return;
+            container.innerHTML = '';
+            let total = 0;
+            cart.forEach(item => {
+                const prod = products.find(p => p.id === item.id);
+                if (!prod) return;
+                total += prod.price * item.qty;
+                const div = document.createElement('div');
+                div.className = "flex gap-4";
+                div.innerHTML = `
+                    <img src="${prod.img}" class="w-20 h-20 object-cover rounded-xl">
+                    <div class="flex-1">
+                        <div class="font-semibold">${prod.name}</div>
+                        <div class="text-emerald-600">$${(prod.price * item.qty).toFixed(2)}</div>
+                        <div class="flex items-center gap-3 mt-2">
+                            <button onclick="changeQty(${item.id}, -1)" class="w-8 h-8 border rounded-lg">-</button>
+                            <span class="font-medium w-6 text-center">${item.qty}</span>
+                            <button onclick="changeQty(${item.id}, 1)" class="w-8 h-8 border rounded-lg">+</button>
+                            <button onclick="removeFromCart(${item.id})" class="ml-auto text-red-500 text-sm">Remove</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            const totalEl = document.getElementById('cart-total');
+            if (totalEl) totalEl.textContent = '$' + total.toFixed(2);
+        }
+
+        function openCart() { renderCart(); document.getElementById('cart-modal').classList.remove('hidden'); }
+        function closeCart() { document.getElementById('cart-modal').classList.add('hidden'); }
+        function proceedToCheckout() {
+            if (cart.length === 0) return alert("Your cart is empty!");
+            closeCart();
+            window.location.href = 'checkout.html';
+        }
+        function toggleMobileMenu() { document.getElementById('mobile-menu').classList.toggle('hidden'); }
+
+        function renderProducts() {
+            const container = document.getElementById('product-grid');
+            if (!container) return;
+            container.innerHTML = '';
+            products.filter(p => p.category === 'bundles').forEach(p => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition";
+                card.innerHTML = `
+                    <img src="${p.img}" class="w-full h-64 object-cover">
+                    <div class="p-6">
+                        <div class="font-semibold text-xl">${p.name}</div>
+                        <div class="text-emerald-600 text-3xl font-bold mt-2">$${p.price.toFixed(2)}</div>
+                        <div class="text-sm text-zinc-600 mt-3">${p.desc}</div>
+                        <button onclick="addToCart(${p.id})" class="mt-6 w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-2xl font-semibold">Add to Cart</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        renderProducts();
+        updateCartCount();
+    </script>
+</body>
+</html>

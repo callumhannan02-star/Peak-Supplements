@@ -1,0 +1,17 @@
+{
+  "name": "peak-supplements",
+  "version": "1.0.0",
+  "description": "Peak Supplements e-commerce site",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs"
+  },
+  "keywords": ["supplements", "ecommerce"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
