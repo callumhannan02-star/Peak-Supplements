@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Peak Supplements</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-zinc-50">
+    <!-- Same navbar as index.html – copy the entire nav from index.html here (I omitted for brevity but you need it) -->
+    <!-- For speed just copy the whole <nav> ... </nav> from index.html -->
+
+    <div class="max-w-3xl mx-auto px-6 py-12">
+        <h1 class="text-4xl font-bold text-center mb-10">Checkout</h1>
+        
+        <div class="bg-white rounded-3xl p-8 mb-8" id="order-summary"></div>
+
+        <div class="bg-white rounded-3xl p-8">
+            <h2 class="text-2xl font-semibold mb-6">Shipping Details</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <input id="name" type="text" placeholder="Full Name" class="border rounded-2xl px-5 py-4 w-full">
+                <input id="email" type="email" placeholder="Email" class="border rounded-2xl px-5 py-4 w-full">
+                <input id="address" type="text" placeholder="Address" class="border rounded-2xl px-5 py-4 col-span-2">
+                <input id="city" type="text" placeholder="City" class="border rounded-2xl px-5 py-4">
+                <input id="postcode" type="text" placeholder="Postcode" class="border rounded-2xl px-5 py-4">
+            </div>
+        </div>
+
+        <div id="paypal-button-container" class="mt-10"></div>
+    </div>
+
+    <!-- Footer same as index -->
+
+    <script src="https://www.paypal.com/sdk/js?client-id=AT_s9EVHWdjMH8S0nAhwFrqAjQSaPPCr-xZSkbJtFPVZkasMp-ej6wJP6bgDayJXSil1i1ETXYdh0ZTP&currency=AUD"></script>
+    <script>
+        // Paste the exact same products array + cart functions from index.html here (addToCart not needed)
+
+        const products = [ ... same array as above ... ];
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        function renderOrderSummary() {
+            // similar to renderCart but simpler
+            let html = `<h2 class="text-2xl font-semibold mb-6">Order Summary</h2>`;
+            let total = 0;
+            cart.forEach(item => {
+                const p = products.find(prod => prod.id === item.id);
+                total += p.price * item.qty;
+                html += `<div class="flex justify-between py-3 border-b">
+                    <div>${p.name} ×${item.qty}</div>
+                    <div>$${(p.price * item.qty).toFixed(2)}</div>
+                </div>`;
+            });
+            html += `<div class="flex justify-between text-xl font-bold mt-6">
+                <span>Total (incl. GST)</span><span>$${total.toFixed(2)}</span>
+            </div>`;
+            document.getElementById('order-summary').innerHTML = html;
+        }
+
+        // PayPal
+        function initPayPal() {
+            if (typeof paypal === 'undefined') return;
+            paypal.Buttons({
+                createOrder: (data, actions) => {
+                    const total = cart.reduce((sum, item) => {
+                        const p = products.find(prod => prod.id === item.id);
+                        return sum + p.price * item.qty;
+                    }, 0);
+                    return actions.order.create({
+                        purchase_units: [{ amount: { value: total.toFixed(2), currency_code: 'AUD' } }]
+                    });
+                },
+                onApprove: (data, actions) => {
+                    return actions.order.capture().then(details => {
+                        const name = document.getElementById('name').value || "Customer";
+                        alert(`🎉 Payment successful!\nThank you ${name}!\nOrder ID: ${details.id}`);
+                        localStorage.removeItem('cart');
+                        window.location.href = 'index.html';
+                    });
+                }
+            }).render('#paypal-button-container');
+        }
+
+        // Run
+        renderOrderSummary();
+        initPayPal();
+        // (include updateCartCount if you want navbar)
+    </script>
+</body>
+</html>
